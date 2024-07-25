@@ -1,5 +1,7 @@
 package advancedmacrorecorder;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -7,6 +9,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 //import javax.swing.JScrollPane;
@@ -17,6 +20,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class BasicUI {
     public static void main(String[] args) {
@@ -32,7 +37,7 @@ public class BasicUI {
         // Create the frame
         JFrame frame = new JFrame("Advanced Macro Recorder");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 500);
+        frame.setSize(600, 500);
 
         // Create a tabbed pane
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -49,10 +54,11 @@ public class BasicUI {
         
         JLabel nameLabel = new JLabel("Name");
         JLabel descriptionLabel = new JLabel("Description");
-        JButton recordButton = new JButton("Record");
+        //JButton recordButton = new JButton("Record");
         //JButton stopRecordingButton = new JButton("Stop Recording");
         JLabel loopsLabel = new JLabel("Loops:");
         JSpinner loopsSpinner = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
+        int spinValue = 0;
         // Get the editor from the spinner
         JSpinner.NumberEditor editor = (JSpinner.NumberEditor) loopsSpinner.getEditor();
         JFormattedTextField textField = editor.getTextField();
@@ -65,11 +71,11 @@ public class BasicUI {
         mainPanel.add(nameInput);
         mainPanel.add(descriptionLabel);
         mainPanel.add(descriptionInput);
-        System.out.println("test");
+        System.out.println(getCurrentDate());
         
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(loopsLabel);
-        buttonPanel.add(loopsSpinner);
+        JPanel loopsPanel = new JPanel();
+        loopsPanel.add(loopsLabel);
+        loopsPanel.add(loopsSpinner);
         
         
         
@@ -94,16 +100,35 @@ public class BasicUI {
         fkeyPanel.add(functionSplitComboBox);
         //textAreaPanel.add(scrollPane);
         
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.add(mainPanel, BorderLayout.NORTH);
-        topPanel.add(buttonPanel, BorderLayout.SOUTH);
-
+        JLabel dateLabel = new JLabel(getCurrentDate()); // Add date label
+        JPanel datePanel = new JPanel();
+        datePanel.add(dateLabel);
+        
+        JLabel statusLabel = new JLabel("Status: ");
+        JLabel stateLabel = new JLabel("IDLE");
+        JPanel statusPanel = new JPanel();
+        statusPanel.add(statusLabel);
+        statusPanel.add(stateLabel);
+        
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+        topPanel.add(mainPanel);
+        topPanel.add(loopsPanel);
+        topPanel.add(fkeyPanel);
+        
+        JPanel centeredPanel = new JPanel();
+        centeredPanel.setLayout(new BoxLayout(centeredPanel, BoxLayout.X_AXIS));
+        centeredPanel.add(Box.createHorizontalGlue()); // Add left spacer
+        centeredPanel.add(dateLabel);
+        centeredPanel.add(Box.createHorizontalGlue()); // Add right spacer
+        topPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+        topPanel.add(centeredPanel);
+        topPanel.add(statusPanel);
         // Add the main panel and text area panel to a new main container panel
         JPanel mainContainerPanel = new JPanel(new BorderLayout());
         mainContainerPanel.add(topPanel, BorderLayout.NORTH);
+        //mainContainerPanel.add(fkeyPanel, BorderLayout.WEST);
         
-        mainContainerPanel.add(fkeyPanel, BorderLayout.CENTER);
-
         // Add the main container panel to the tabbed pane
         tabbedPane.addTab("Main", mainContainerPanel);
 
@@ -131,6 +156,11 @@ public class BasicUI {
         JMenuItem loadItem = new JMenuItem("Load");
         JMenuItem clearItem = new JMenuItem("Clear");
         exitItem.addActionListener(e -> System.exit(0));
+        saveItem.addActionListener(e -> System.out.println("Settings saved"));
+        loadItem.addActionListener(e -> System.out.println("Settings loaded"));
+        clearItem.addActionListener(e -> nameInput.setText(""));
+        clearItem.addActionListener(e -> descriptionInput.setText(""));
+        clearItem.addActionListener(e -> loopsSpinner.setValue(spinValue));
         fileMenu.add(saveItem);
         fileMenu.add(loadItem);
         fileMenu.add(clearItem);
@@ -145,4 +175,10 @@ public class BasicUI {
         //recordButton.addActionListener(e -> label.setText("BUTTON CLICKED"));
         //stopRecordingButton.addActionListener(e -> label.setText("stop recording"));
     }
+    
+    private static String getCurrentDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // Date format
+        return sdf.format(new Date());
+    }
+    
 }
