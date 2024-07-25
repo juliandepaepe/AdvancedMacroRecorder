@@ -8,7 +8,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 
@@ -28,20 +31,18 @@ public class BasicUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 500);
 
-        // Create a panel to hold components
-        JPanel panel = new JPanel();
+        // Create a tabbed pane
+        JTabbedPane tabbedPane = new JTabbedPane();
 
-        // Create a label
+        // Create the main panel
+        JPanel mainPanel = new JPanel();
         JLabel label = new JLabel("Ready to record...");
-
-        // Create a record button
         JButton recordButton = new JButton("Record");
-        JButton stoprecording = new JButton("Stop Recording");
-        // Add the label and button to the panel
-        panel.add(label);
-        panel.add(recordButton);
-        panel.add(label);
-        panel.add(stoprecording);
+        JButton stopRecordingButton = new JButton("Stop Recording");
+        mainPanel.add(recordButton);
+        mainPanel.add(label);
+        mainPanel.add(stopRecordingButton);
+
         // Create a text area placeholder for recorded actions
         JTextArea recordedActionsArea = new JTextArea(5, 25); // Adjusted size
         recordedActionsArea.setEditable(false);
@@ -50,10 +51,27 @@ public class BasicUI {
         // Create a sub-panel for the text area and add it to the main panel
         JPanel textAreaPanel = new JPanel();
         textAreaPanel.add(scrollPane);
-        	
-        // Add the panel and text area panel to the frame
-        frame.add(panel, BorderLayout.NORTH);
-        frame.add(textAreaPanel, BorderLayout.CENTER);
+
+        // Add the main panel and text area panel to a new main container panel
+        JPanel mainContainerPanel = new JPanel(new BorderLayout());
+        mainContainerPanel.add(mainPanel, BorderLayout.NORTH);
+        mainContainerPanel.add(textAreaPanel, BorderLayout.CENTER);
+
+        // Add the main container panel to the tabbed pane
+        tabbedPane.addTab("Main", mainContainerPanel);
+
+        // Create the advanced panel
+        JPanel advancedPanel = new JPanel();
+        JLabel loopsLabel = new JLabel("Loops:");
+        JSpinner loopsSpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
+        advancedPanel.add(loopsLabel);
+        advancedPanel.add(loopsSpinner);
+
+        // Add the advanced panel to the tabbed pane
+        tabbedPane.addTab("Advanced", advancedPanel);
+
+        // Add the tabbed pane to the frame
+        frame.add(tabbedPane);
 
         // Create a menu bar
         JMenuBar menuBar = new JMenuBar();
