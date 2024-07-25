@@ -7,6 +7,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 //import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
@@ -14,6 +16,7 @@ import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 public class BasicUI {
     public static void main(String[] args) {
@@ -50,6 +53,14 @@ public class BasicUI {
         //JButton stopRecordingButton = new JButton("Stop Recording");
         JLabel loopsLabel = new JLabel("Loops:");
         JSpinner loopsSpinner = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
+        // Get the editor from the spinner
+        JSpinner.NumberEditor editor = (JSpinner.NumberEditor) loopsSpinner.getEditor();
+        JFormattedTextField textField = editor.getTextField();
+        // Set preferred size of the text field
+        textField.setPreferredSize(new Dimension(60, 20)); // Width x Height
+        // Ensure the spinner itself respects this size
+        loopsSpinner.setPreferredSize(new Dimension(100, 20)); // Width x Height
+        
         mainPanel.add(nameLabel);
         mainPanel.add(nameInput);
         mainPanel.add(descriptionLabel);
@@ -60,8 +71,27 @@ public class BasicUI {
         buttonPanel.add(loopsLabel);
         buttonPanel.add(loopsSpinner);
         
+        
+        
         // Create a sub-panel for the text area and add it to the main panel
-        JPanel textAreaPanel = new JPanel();
+        JPanel fkeyPanel = new JPanel();
+        // Create and add the drop-down list
+        JLabel functionRecLabel = new JLabel("Start/stop recording");
+        JLabel functionPlayLabel = new JLabel("Start/stop playback");
+        JLabel functionSplitLabel = new JLabel("Split recording");
+        String[] functionKeys = {"F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"};
+        JComboBox<String> functionRecComboBox = new JComboBox<>(functionKeys);
+        JComboBox<String> functionPlayComboBox = new JComboBox<>(functionKeys);
+        JComboBox<String> functionSplitComboBox = new JComboBox<>(functionKeys);
+        functionRecComboBox.setSelectedItem("F6");
+        functionPlayComboBox.setSelectedItem("F7");
+        functionSplitComboBox.setSelectedItem("F8");
+        fkeyPanel.add(functionRecLabel);
+        fkeyPanel.add(functionRecComboBox);
+        fkeyPanel.add(functionPlayLabel);
+        fkeyPanel.add(functionPlayComboBox);
+        fkeyPanel.add(functionSplitLabel);
+        fkeyPanel.add(functionSplitComboBox);
         //textAreaPanel.add(scrollPane);
         
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -72,7 +102,7 @@ public class BasicUI {
         JPanel mainContainerPanel = new JPanel(new BorderLayout());
         mainContainerPanel.add(topPanel, BorderLayout.NORTH);
         
-        mainContainerPanel.add(textAreaPanel, BorderLayout.CENTER);
+        mainContainerPanel.add(fkeyPanel, BorderLayout.CENTER);
 
         // Add the main container panel to the tabbed pane
         tabbedPane.addTab("Main", mainContainerPanel);
