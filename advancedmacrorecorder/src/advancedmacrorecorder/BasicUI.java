@@ -19,6 +19,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -199,6 +201,21 @@ public class BasicUI {
         fileMenu.add(exitItem);
         menuBar.add(fileMenu);
         frame.setJMenuBar(menuBar);
+        
+     // Add KeyListener to frame
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                String selectedKey = (String) functionRecComboBox.getSelectedItem();
+                if (selectedKey != null && e.getKeyCode() == getKeyCode(selectedKey)) {
+                    stateLabel.setText("ACTIVE");
+                }
+            }
+        });
+
+        // Ensure frame can receive key events
+        frame.setFocusable(true);
+        frame.requestFocusInWindow();
 
         // Display the window
         frame.setVisible(true);
@@ -208,4 +225,23 @@ public class BasicUI {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // Date format
         return sdf.format(new Date());
     }
+    
+    private static int getKeyCode(String functionKey) {
+        switch (functionKey) {
+            case "F1": return KeyEvent.VK_F1;
+            case "F2": return KeyEvent.VK_F2;
+            case "F3": return KeyEvent.VK_F3;
+            case "F4": return KeyEvent.VK_F4;
+            case "F5": return KeyEvent.VK_F5;
+            case "F6": return KeyEvent.VK_F6;
+            case "F7": return KeyEvent.VK_F7;
+            case "F8": return KeyEvent.VK_F8;
+            case "F9": return KeyEvent.VK_F9;
+            case "F10": return KeyEvent.VK_F10;
+            case "F11": return KeyEvent.VK_F11;
+            case "F12": return KeyEvent.VK_F12;
+            default: return -1;
+        }
+    }
+    
 }
