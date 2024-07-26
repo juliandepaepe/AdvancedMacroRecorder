@@ -2,7 +2,6 @@ package advancedmacrorecorder;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -12,7 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
-//import javax.swing.JScrollPane;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -44,18 +43,15 @@ public class BasicUI {
 
         // Create the main panel
         JPanel mainPanel = new JPanel();
-     // Create a text area placeholder for recorded actions
+        // Create a text area placeholder for recorded actions
         JTextArea nameInput = new JTextArea(1, 10); // Adjusted size
         nameInput.setEditable(true);
         
         JTextArea descriptionInput = new JTextArea(1, 10); // Adjusted size
         descriptionInput.setEditable(true);
         
-        
         JLabel nameLabel = new JLabel("Name");
         JLabel descriptionLabel = new JLabel("Description");
-        //JButton recordButton = new JButton("Record");
-        //JButton stopRecordingButton = new JButton("Stop Recording");
         JLabel loopsLabel = new JLabel("Loops:");
         JSpinner loopsSpinner = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
         int spinValue = 0;
@@ -77,8 +73,6 @@ public class BasicUI {
         loopsPanel.add(loopsLabel);
         loopsPanel.add(loopsSpinner);
         
-        
-        
         // Create a sub-panel for the text area and add it to the main panel
         JPanel fkeyPanel = new JPanel();
         // Create and add the drop-down list
@@ -98,7 +92,6 @@ public class BasicUI {
         fkeyPanel.add(functionPlayComboBox);
         fkeyPanel.add(functionSplitLabel);
         fkeyPanel.add(functionSplitComboBox);
-        //textAreaPanel.add(scrollPane);
         
         JLabel dateLabel = new JLabel(getCurrentDate()); // Add date label
         JPanel datePanel = new JPanel();
@@ -110,6 +103,25 @@ public class BasicUI {
         statusPanel.add(statusLabel);
         statusPanel.add(stateLabel);
         
+        // Placeholder for total duration
+        JLabel totalDurationLabel = new JLabel("Total duration: 00:00:00"); // Add total duration label
+        JPanel durationPanel = new JPanel();
+        durationPanel.add(totalDurationLabel);
+
+        // Placeholder for recorded keys with scroll functionality
+        JTextArea recordedKeysPlaceholder = new JTextArea(5, 20); // Adjust size as needed
+        recordedKeysPlaceholder.setEditable(false);
+        recordedKeysPlaceholder.setBackground(java.awt.Color.WHITE); // Set background color to white
+        recordedKeysPlaceholder.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.BLACK)); // Add a border
+        
+        // Wrap the text area in a JScrollPane
+        JScrollPane scrollPane = new JScrollPane(recordedKeysPlaceholder);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        JPanel recordedKeysPanel = new JPanel();
+        recordedKeysPanel.add(scrollPane);
+
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
         topPanel.add(mainPanel);
@@ -124,24 +136,43 @@ public class BasicUI {
         topPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         topPanel.add(centeredPanel);
         topPanel.add(statusPanel);
+        topPanel.add(durationPanel); // Add the duration panel
+        topPanel.add(recordedKeysPanel); // Add the recorded keys panel
+        
         // Add the main panel and text area panel to a new main container panel
         JPanel mainContainerPanel = new JPanel(new BorderLayout());
         mainContainerPanel.add(topPanel, BorderLayout.NORTH);
-        //mainContainerPanel.add(fkeyPanel, BorderLayout.WEST);
         
         // Add the main container panel to the tabbed pane
         tabbedPane.addTab("Main", mainContainerPanel);
 
         // Create the advanced panel
         JPanel advancedPanel = new JPanel();
-        JLabel SpeedMultiplierLabel = new JLabel("Speed Multiplier%:");
-        JSpinner SpeedMultiplierSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
-
+        advancedPanel.setLayout(new BoxLayout(advancedPanel, BoxLayout.Y_AXIS));
         
-
-        advancedPanel.add(SpeedMultiplierLabel);
-        advancedPanel.add(SpeedMultiplierSpinner);
-
+        JPanel speedMultiplierPanel = new JPanel();
+        JLabel SpeedMultiplierLabel = new JLabel("Speed Multiplier%:");
+        JSpinner SpeedMultiplierSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 500, 1));
+        SpeedMultiplierSpinner.setPreferredSize(new Dimension(60, 20)); // Adjust size
+        speedMultiplierPanel.add(SpeedMultiplierLabel);
+        speedMultiplierPanel.add(SpeedMultiplierSpinner);
+        
+        JPanel randomizePanel = new JPanel();
+        JLabel randomizeClickLabel = new JLabel("Randomize click locations ±:");
+        JSpinner randomizeClickSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 20, 1));
+        randomizePanel.add(randomizeClickLabel);
+        randomizePanel.add(randomizeClickSpinner);
+        
+        JPanel extraDelayPanel = new JPanel();
+        JLabel extraDelayLabel = new JLabel("Extra delay/Breaks after each playback in seconds:");
+        extraDelayPanel.add(extraDelayLabel);
+        JPanel minDelayPanel = new JPanel();
+        JLabel minDelayLabel = new JLabel("min:");
+        minDelayPanel.add(minDelayLabel);
+        advancedPanel.add(speedMultiplierPanel);
+        advancedPanel.add(randomizePanel);
+        advancedPanel.add(extraDelayPanel);
+        advancedPanel.add(minDelayPanel);
         // Add the advanced panel to the tabbed pane
         tabbedPane.addTab("Advanced", advancedPanel);
 
@@ -170,15 +201,10 @@ public class BasicUI {
 
         // Display the window
         frame.setVisible(true);
-
-        // Add button click listener
-        //recordButton.addActionListener(e -> label.setText("BUTTON CLICKED"));
-        //stopRecordingButton.addActionListener(e -> label.setText("stop recording"));
     }
     
     private static String getCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // Date format
         return sdf.format(new Date());
     }
-    
 }
