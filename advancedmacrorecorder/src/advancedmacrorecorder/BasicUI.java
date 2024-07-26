@@ -37,11 +37,11 @@ public class BasicUI {
     private static boolean isActive = false; // Flag to track status
     private static Timer timer; // Timer for tracking duration
     private static long startTime; // Start time for the timer
-    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss"); // Time format for display
     private static ImageIcon idleIcon;
     private static ImageIcon activeIcon;
     private static ImageIcon playIcon;
     private static JLabel timeLabel; // Time label for displaying duration
+    private static long totalElapsedTime; // Total elapsed time including pauses
 
     static {
         try {
@@ -194,7 +194,7 @@ public class BasicUI {
         speedMultiplierPanel.add(SpeedMultiplierSpinner);
         
         JPanel randomizePanel = new JPanel();
-        JLabel randomizeClickLabel = new JLabel("Randomize click locations �:");
+        JLabel randomizeClickLabel = new JLabel("Randomize click locations %:");
         JSpinner randomizeClickSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 20, 1));
         randomizePanel.add(randomizeClickLabel);
         randomizePanel.add(randomizeClickSpinner);
@@ -291,12 +291,12 @@ public class BasicUI {
     }
     
     private static void startTimer() {
-        startTime = System.currentTimeMillis();
+    	startTime = System.currentTimeMillis();
         timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                long elapsedMillis = System.currentTimeMillis() - startTime;
-				timeLabel.setText(formatElapsedTime(elapsedMillis));
+            	long elapsedTime = totalElapsedTime + (System.currentTimeMillis() - startTime);
+				timeLabel.setText(formatElapsedTime(elapsedTime));
             }
         });
         timer.start();
@@ -305,8 +305,7 @@ public class BasicUI {
     private static void stopTimer() {
         if (timer != null) {
             timer.stop();
-            timer = null;
-            timeLabel.setText("00:00:00");
+            totalElapsedTime += System.currentTimeMillis() - startTime;
         }
     }
     
