@@ -34,13 +34,16 @@ public class BasicUI {
     private static boolean isActive = false; // Flag to track status
     private static ImageIcon idleIcon;
     private static ImageIcon activeIcon;
+    private static ImageIcon playIcon;
 
     static {
         try {
             Image idleImg = ImageIO.read(new File("resources/idle_icon.png"));
             Image activeImg = ImageIO.read(new File("resources/active_icon.png"));
+            Image playImg = ImageIO.read(new File("resources/playback_icon.png"));
             idleIcon = new ImageIcon(idleImg);
             activeIcon = new ImageIcon(activeImg);
+            playIcon = new ImageIcon(playImg);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -184,7 +187,7 @@ public class BasicUI {
         speedMultiplierPanel.add(SpeedMultiplierSpinner);
         
         JPanel randomizePanel = new JPanel();
-        JLabel randomizeClickLabel = new JLabel("Randomize click locations ±:");
+        JLabel randomizeClickLabel = new JLabel("Randomize click locations ï¿½:");
         JSpinner randomizeClickSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 20, 1));
         randomizePanel.add(randomizeClickLabel);
         randomizePanel.add(randomizeClickSpinner);
@@ -230,8 +233,12 @@ public class BasicUI {
             @Override
             public boolean dispatchKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
-                    int selectedKeyCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
-                    if (e.getKeyCode() == selectedKeyCode) {
+                    int selectedRecCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
+                    int selectedPlayCode = getKeyCode((String) functionPlayComboBox.getSelectedItem());
+                    
+                    
+                    
+                    if (e.getKeyCode() == selectedRecCode) {
                         // Toggle state
                         if (isActive) {
                             stateLabel.setText("IDLE");
@@ -241,6 +248,18 @@ public class BasicUI {
                             stateLabel.setText("RECORDING");
                             stateLabel.setForeground(java.awt.Color.RED);
                             frame.setIconImage(activeIcon.getImage());
+                        }
+                        isActive = !isActive; // Toggle the flag
+                    } else if (e.getKeyCode() == selectedPlayCode) {
+                        // Toggle state
+                        if (isActive) {
+                            stateLabel.setText("IDLE");
+                            stateLabel.setForeground(java.awt.Color.BLACK);
+                            frame.setIconImage(idleIcon.getImage());
+                        } else {
+                            stateLabel.setText("PLAYBACK");
+                            stateLabel.setForeground(java.awt.Color.GREEN);
+                            frame.setIconImage(playIcon.getImage());
                         }
                         isActive = !isActive; // Toggle the flag
                     }
