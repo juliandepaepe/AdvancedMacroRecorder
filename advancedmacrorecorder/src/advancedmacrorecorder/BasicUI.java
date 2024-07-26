@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class BasicUI {
-	private static boolean isActive = false; // Flag to track status
+    private static boolean isActive = false; // Flag to track status
     public static void main(String[] args) {
         // Ensure the UI is created on the Event Dispatch Thread
         SwingUtilities.invokeLater(new Runnable() {
@@ -103,6 +103,7 @@ public class BasicUI {
         
         JLabel statusLabel = new JLabel("Status: ");
         JLabel stateLabel = new JLabel("IDLE");
+        stateLabel.setForeground(java.awt.Color.BLACK); // Ensure initial state is black
         JPanel statusPanel = new JPanel();
         statusPanel.add(statusLabel);
         statusPanel.add(stateLabel);
@@ -211,11 +212,13 @@ public class BasicUI {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
                     int selectedKeyCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
                     if (e.getKeyCode() == selectedKeyCode) {
-                    	// Toggle state
+                        // Toggle state
                         if (isActive) {
                             stateLabel.setText("IDLE");
+                            stateLabel.setForeground(java.awt.Color.BLACK);
                         } else {
-                            stateLabel.setText("ACTIVE");
+                            stateLabel.setText("RECORDING");
+                            stateLabel.setForeground(java.awt.Color.RED);
                         }
                         isActive = !isActive; // Toggle the flag
                     }
@@ -250,5 +253,4 @@ public class BasicUI {
             default: return -1;
         }
     }
-    
 }
