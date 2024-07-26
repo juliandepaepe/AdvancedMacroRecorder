@@ -19,6 +19,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
@@ -202,20 +204,19 @@ public class BasicUI {
         menuBar.add(fileMenu);
         frame.setJMenuBar(menuBar);
         
-     // Add KeyListener to frame
-        frame.addKeyListener(new KeyAdapter() {
+        // Add KeyEventDispatcher to capture key events
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                String selectedKey = (String) functionRecComboBox.getSelectedItem();
-                if (selectedKey != null && e.getKeyCode() == getKeyCode(selectedKey)) {
-                    stateLabel.setText("ACTIVE");
+            public boolean dispatchKeyEvent(KeyEvent e) {
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    int selectedKeyCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
+                    if (e.getKeyCode() == selectedKeyCode) {
+                        stateLabel.setText("ACTIVE");
+                    }
                 }
+                return false;
             }
         });
-
-        // Ensure frame can receive key events
-        frame.setFocusable(true);
-        frame.requestFocusInWindow();
 
         // Display the window
         frame.setVisible(true);
