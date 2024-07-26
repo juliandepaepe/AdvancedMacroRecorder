@@ -104,10 +104,11 @@ public class BasicUI {
         statusPanel.add(stateLabel);
         
         // Placeholder for total duration
-        JLabel totalDurationLabel = new JLabel("Total duration: 00:00:00"); // Add total duration label
+        JLabel totalDurationLabel = new JLabel("Total duration: "); // Add total duration label
+        JLabel timeLabel = new JLabel("00:00:00");
         JPanel durationPanel = new JPanel();
         durationPanel.add(totalDurationLabel);
-
+        durationPanel.add(timeLabel);
         // Placeholder for recorded keys with scroll functionality
         JTextArea recordedKeysPlaceholder = new JTextArea(5, 20); // Adjust size as needed
         recordedKeysPlaceholder.setEditable(false);
