@@ -17,11 +17,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.ImageIcon;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.Image;
 import java.io.File;
@@ -32,9 +35,13 @@ import java.util.Date;
 
 public class BasicUI {
     private static boolean isActive = false; // Flag to track status
+    private static Timer timer; // Timer for tracking duration
+    private static long startTime; // Start time for the timer
+    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss"); // Time format for display
     private static ImageIcon idleIcon;
     private static ImageIcon activeIcon;
     private static ImageIcon playIcon;
+    private static JLabel timeLabel; // Time label for displaying duration
 
     static {
         try {
@@ -133,7 +140,7 @@ public class BasicUI {
         
         // Placeholder for total duration
         JLabel totalDurationLabel = new JLabel("Total duration: "); // Add total duration label
-        JLabel timeLabel = new JLabel("00:00:00");
+        timeLabel = new JLabel("00:00:00");
         JPanel durationPanel = new JPanel();
         durationPanel.add(totalDurationLabel);
         durationPanel.add(timeLabel);
@@ -244,10 +251,12 @@ public class BasicUI {
                             stateLabel.setText("IDLE");
                             stateLabel.setForeground(java.awt.Color.BLACK);
                             frame.setIconImage(idleIcon.getImage());
+                            stopTimer(); // Stop the timer
                         } else {
                             stateLabel.setText("RECORDING");
                             stateLabel.setForeground(java.awt.Color.RED);
                             frame.setIconImage(activeIcon.getImage());
+                            startTimer(); // Start the timer
                         }
                         isActive = !isActive; // Toggle the flag
                     } else if (e.getKeyCode() == selectedPlayCode) {
@@ -270,6 +279,35 @@ public class BasicUI {
 
         // Display the window
         frame.setVisible(true);
+    }
+    
+    private static String formatElapsedTime(long elapsedMillis) {
+        long totalSeconds = elapsedMillis / 1000;
+        long hours = totalSeconds / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+    
+    private static void startTimer() {
+        startTime = System.currentTimeMillis();
+        timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                long elapsedMillis = System.currentTimeMillis() - startTime;
+				timeLabel.setText(formatElapsedTime(elapsedMillis));
+            }
+        });
+        timer.start();
+    }
+
+    private static void stopTimer() {
+        if (timer != null) {
+            timer.stop();
+            timer = null;
+            timeLabel.setText("00:00:00");
+        }
     }
     
     private static String getCurrentDate() {
