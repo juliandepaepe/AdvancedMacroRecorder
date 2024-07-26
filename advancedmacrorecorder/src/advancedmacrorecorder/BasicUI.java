@@ -17,16 +17,35 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.ImageIcon;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class BasicUI {
     private static boolean isActive = false; // Flag to track status
+    private static ImageIcon idleIcon;
+    private static ImageIcon activeIcon;
+
+    static {
+        try {
+            Image idleImg = ImageIO.read(new File("resources/idle_icon.png"));
+            Image activeImg = ImageIO.read(new File("resources/active_icon.png"));
+            idleIcon = new ImageIcon(idleImg);
+            activeIcon = new ImageIcon(activeImg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
         // Ensure the UI is created on the Event Dispatch Thread
         SwingUtilities.invokeLater(new Runnable() {
@@ -41,6 +60,7 @@ public class BasicUI {
         JFrame frame = new JFrame("Advanced Macro Recorder");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 500);
+        frame.setIconImage(idleIcon.getImage());
 
         // Create a tabbed pane
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -164,7 +184,7 @@ public class BasicUI {
         speedMultiplierPanel.add(SpeedMultiplierSpinner);
         
         JPanel randomizePanel = new JPanel();
-        JLabel randomizeClickLabel = new JLabel("Randomize click locations Â±:");
+        JLabel randomizeClickLabel = new JLabel("Randomize click locations ±:");
         JSpinner randomizeClickSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 20, 1));
         randomizePanel.add(randomizeClickLabel);
         randomizePanel.add(randomizeClickSpinner);
@@ -216,9 +236,11 @@ public class BasicUI {
                         if (isActive) {
                             stateLabel.setText("IDLE");
                             stateLabel.setForeground(java.awt.Color.BLACK);
+                            frame.setIconImage(idleIcon.getImage());
                         } else {
                             stateLabel.setText("RECORDING");
                             stateLabel.setForeground(java.awt.Color.RED);
+                            frame.setIconImage(activeIcon.getImage());
                         }
                         isActive = !isActive; // Toggle the flag
                     }
