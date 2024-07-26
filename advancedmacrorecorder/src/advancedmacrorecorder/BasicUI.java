@@ -21,12 +21,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class BasicUI {
+	private static boolean isActive = false; // Flag to track status
     public static void main(String[] args) {
         // Ensure the UI is created on the Event Dispatch Thread
         SwingUtilities.invokeLater(new Runnable() {
@@ -211,7 +211,13 @@ public class BasicUI {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
                     int selectedKeyCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
                     if (e.getKeyCode() == selectedKeyCode) {
-                        stateLabel.setText("ACTIVE");
+                    	// Toggle state
+                        if (isActive) {
+                            stateLabel.setText("IDLE");
+                        } else {
+                            stateLabel.setText("ACTIVE");
+                        }
+                        isActive = !isActive; // Toggle the flag
                     }
                 }
                 return false;
