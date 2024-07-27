@@ -1,5 +1,4 @@
 package advancedmacrorecorder;
-
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -10,7 +9,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JComboBox;
-//import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
@@ -18,8 +17,10 @@ import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import java.awt.BorderLayout;
-//import java.awt.Dimension;
+import java.awt.Dimension;
+//import java.awt.GridLayout;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
@@ -27,6 +28,7 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+//import java.awt.Desktop;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -36,6 +38,7 @@ public class BasicUI {
     private static ImageIcon idleIcon;
     private static ImageIcon activeIcon;
     private static ImageIcon playbackIcon;
+    private static JTextArea logTextArea = new JTextArea(10, 50); // Text area for logs
 
     static {
         try {
@@ -46,11 +49,12 @@ public class BasicUI {
             activeIcon = new ImageIcon(activeImg);
             playbackIcon = new ImageIcon(playbackImg);
         } catch (IOException e) {
-            e.printStackTrace();
+            logInternal("Error loading icons: " + e.getMessage());
         }
     }
 
     public static void main(String[] args) {
+        logInternal("Application started.");
         // Ensure the UI is created on the Event Dispatch Thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -145,6 +149,29 @@ public class BasicUI {
         JPanel recordedKeysPanel = new JPanel();
         recordedKeysPanel.add(scrollPane);
 
+        // Add the log text area with scroll pane
+        JScrollPane logScrollPane = new JScrollPane(logTextArea);
+        logTextArea.setEditable(false);
+        JPanel logPanel = new JPanel();
+        logPanel.setLayout(new BorderLayout());
+        logPanel.add(logScrollPane, BorderLayout.CENTER);
+        
+        // Create the "SHOW LOG FILE" button and center it
+        JButton showLogButton = new JButton("SHOW LOG FILE");
+        showLogButton.addActionListener(e -> {
+            logInternal("Log file shown.");
+            JFrame logFrame = new JFrame("Log");
+            logFrame.setSize(600, 300);
+            logFrame.add(logPanel);
+            logFrame.setVisible(true);
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+        buttonPanel.add(Box.createHorizontalGlue());
+        buttonPanel.add(showLogButton);
+        buttonPanel.add(Box.createHorizontalGlue());
+
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
         topPanel.add(mainPanel);
@@ -161,7 +188,8 @@ public class BasicUI {
         topPanel.add(statusPanel);
         topPanel.add(durationPanel); // Add the duration panel
         topPanel.add(recordedKeysPanel); // Add the recorded keys panel
-        
+        topPanel.add(buttonPanel); // Add the centered button panel
+
         // Add the main panel and text area panel to a new main container panel
         JPanel mainContainerPanel = new JPanel(new BorderLayout());
         mainContainerPanel.add(topPanel, BorderLayout.NORTH);
@@ -175,7 +203,8 @@ public class BasicUI {
         
         JPanel speedMultiplierPanel = new JPanel();
         JLabel SpeedMultiplierLabel = new JLabel("Speed Multiplier%:");
-        JSpinner SpeedMultiplierSpinner = createIntegerSpinner(1, 1, 500, 1);
+        JSpinner SpeedMultiplierSpinner = new JSpinner(new SpinnerNumberModel(100, 1, 500, 1));
+        SpeedMultiplierSpinner.setPreferredSize(new Dimension(60, 20)); // Adjust size
         speedMultiplierPanel.add(SpeedMultiplierLabel);
         speedMultiplierPanel.add(SpeedMultiplierSpinner);
         
@@ -188,40 +217,81 @@ public class BasicUI {
         JPanel extraDelayPanel = new JPanel();
         JLabel extraDelayLabel = new JLabel("Extra delay/Breaks after each playback in seconds:");
         extraDelayPanel.add(extraDelayLabel);
-        
+
         JPanel minDelayPanel = new JPanel();
         JLabel minDelayLabel = new JLabel("Min:");
         JSpinner minDelaySpinner = createIntegerSpinner(0, 0, 9999, 1);
         minDelayPanel.add(minDelayLabel);
         minDelayPanel.add(minDelaySpinner);
         
-        JPanel maxPanel = new JPanel();
-        JLabel maxLabel = new JLabel("Max:");
-        JSpinner maxSpinner = createIntegerSpinner(0, 0, 9999, 1);
-        maxPanel.add(maxLabel);
-        maxPanel.add(maxSpinner);
+        JPanel maxDelayPanel = new JPanel();
+        JLabel maxDelayLabel = new JLabel("Max:");
+        JSpinner maxDelaySpinner = createIntegerSpinner(0, 0, 9999, 1);
+        maxDelayPanel.add(maxDelayLabel);
+        maxDelayPanel.add(maxDelaySpinner);
         
-        JPanel targetPanel = new JPanel();
-        JLabel targetLabel = new JLabel("Target:");
-        JSpinner targetSpinner = createIntegerSpinner(0, 0, 9999, 1);
-        targetPanel.add(targetLabel);
-        targetPanel.add(targetSpinner);
+        JPanel targetDelayPanel = new JPanel();
+        JLabel targetDelayLabel = new JLabel("Target:");
+        JSpinner targetDelaySpinner = createIntegerSpinner(0, 0, 9999, 1);
+        targetDelayPanel.add(targetDelayLabel);
+        targetDelayPanel.add(targetDelaySpinner);
         
-        JPanel FocusPanel = new JPanel();
-        JLabel FocusLabel = new JLabel("Focus:");
-        JSpinner focusSpinner = createIntegerSpinner(0, 0, 9999, 1);
-        FocusPanel.add(FocusLabel);
-        FocusPanel.add(focusSpinner);
+        JPanel focusDelayPanel = new JPanel();
+        JLabel focusDelayLabel = new JLabel("Focus:");
+        JSpinner focusDelaySpinner = createIntegerSpinner(0, 0, 9999, 1);
+        focusDelayPanel.add(focusDelayLabel);
+        focusDelayPanel.add(focusDelaySpinner);
 
         advancedPanel.add(speedMultiplierPanel);
         advancedPanel.add(randomizePanel);
         advancedPanel.add(extraDelayPanel);
         advancedPanel.add(minDelayPanel);
-        advancedPanel.add(maxPanel);
-        advancedPanel.add(targetPanel);
-        advancedPanel.add(FocusPanel);
+        advancedPanel.add(maxDelayPanel);
+        advancedPanel.add(targetDelayPanel);
+        advancedPanel.add(focusDelayPanel);
+        
         // Add the advanced panel to the tabbed pane
         tabbedPane.addTab("Advanced", advancedPanel);
+
+        // Create the break panel
+        JPanel breakPanel = new JPanel();
+        breakPanel.setLayout(new BoxLayout(breakPanel, BoxLayout.Y_AXIS));
+        
+        JPanel breakMinPanel = new JPanel();
+        JLabel breakMinLabel = new JLabel("Min:");
+        JSpinner breakMinSpinner = createIntegerSpinner(0, 0, 9999, 1);
+        breakMinPanel.add(breakMinLabel);
+        breakMinPanel.add(breakMinSpinner);
+        
+        JPanel breakMaxPanel = new JPanel();
+        JLabel breakMaxLabel = new JLabel("Max:");
+        JSpinner breakMaxSpinner = createIntegerSpinner(0, 0, 9999, 1);
+        breakMaxPanel.add(breakMaxLabel);
+        breakMaxPanel.add(breakMaxSpinner);
+        
+        JPanel breakTargetPanel = new JPanel();
+        JLabel breakTargetLabel = new JLabel("Target:");
+        JSpinner breakTargetSpinner = createIntegerSpinner(0, 0, 9999, 1);
+        breakTargetPanel.add(breakTargetLabel);
+        breakTargetPanel.add(breakTargetSpinner);
+        
+        JPanel breakFocusPanel = new JPanel();
+        JLabel breakFocusLabel = new JLabel("Focus:");
+        JSpinner breakFocusSpinner = createIntegerSpinner(0, 0, 9999, 1);
+        breakFocusPanel.add(breakFocusLabel);
+        breakFocusPanel.add(breakFocusSpinner);
+        
+        JButton addBreakButton = new JButton("ADD BREAK");
+        addBreakButton.addActionListener(e -> logInternal("Break added."));
+
+        breakPanel.add(breakMinPanel);
+        breakPanel.add(breakMaxPanel);
+        breakPanel.add(breakTargetPanel);
+        breakPanel.add(breakFocusPanel);
+        breakPanel.add(addBreakButton);
+        
+        // Add the break panel to the tabbed pane
+        tabbedPane.addTab("Break", breakPanel);
 
         // Add the tabbed pane to the frame
         frame.add(tabbedPane);
@@ -234,21 +304,22 @@ public class BasicUI {
         JMenuItem loadItem = new JMenuItem("Load");
         JMenuItem clearItem = new JMenuItem("Clear");
         exitItem.addActionListener(e -> System.exit(0));
-        saveItem.addActionListener(e -> System.out.println("Settings saved"));
-        loadItem.addActionListener(e -> System.out.println("Settings loaded"));
+        saveItem.addActionListener(e -> logInternal("Settings saved"));
+        loadItem.addActionListener(e -> logInternal("Settings loaded"));
         clearItem.addActionListener(e -> {
             nameInput.setText("");
             descriptionInput.setText("");
             loopsSpinner.setValue(spinValue);
-            minDelaySpinner.setValue(0);
-            maxSpinner.setValue(0);
-            targetSpinner.setValue(0);
-            focusSpinner.setValue(0);
-            SpeedMultiplierSpinner.setValue(1);
-            randomizeClickSpinner.setValue(1);
+            functionRecComboBox.setSelectedItem("F6");
+            functionPlayComboBox.setSelectedItem("F7");
+            functionSplitComboBox.setSelectedItem("F8");
             stateLabel.setText("IDLE");
             stateLabel.setForeground(java.awt.Color.BLACK);
             frame.setIconImage(idleIcon.getImage());
+            recordedKeysPlaceholder.setText("");
+            isActive = false;
+            isPlaybackActive = false;
+            logInternal("Application cleared.");
         });
         fileMenu.add(saveItem);
         fileMenu.add(loadItem);
@@ -262,9 +333,10 @@ public class BasicUI {
             @Override
             public boolean dispatchKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
-                    int selectedKeyCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
-                    if (e.getKeyCode() == selectedKeyCode) {
-                        // Toggle state
+                    int selectedRecKeyCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
+                    int selectedPlayKeyCode = getKeyCode((String) functionPlayComboBox.getSelectedItem());
+                    if (e.getKeyCode() == selectedRecKeyCode) {
+                        // Toggle recording state
                         if (isActive) {
                             stateLabel.setText("IDLE");
                             stateLabel.setForeground(java.awt.Color.BLACK);
@@ -275,10 +347,9 @@ public class BasicUI {
                             frame.setIconImage(activeIcon.getImage());
                         }
                         isActive = !isActive; // Toggle the flag
-                    }
-                    selectedKeyCode = getKeyCode((String) functionPlayComboBox.getSelectedItem());
-                    if (e.getKeyCode() == selectedKeyCode) {
-                        // Toggle state
+                        logInternal("Recording state changed: " + (isActive ? "RECORDING" : "IDLE"));
+                    } else if (e.getKeyCode() == selectedPlayKeyCode) {
+                        // Toggle playback state
                         if (isPlaybackActive) {
                             stateLabel.setText("IDLE");
                             stateLabel.setForeground(java.awt.Color.BLACK);
@@ -289,6 +360,7 @@ public class BasicUI {
                             frame.setIconImage(playbackIcon.getImage());
                         }
                         isPlaybackActive = !isPlaybackActive; // Toggle the flag
+                        logInternal("Playback state changed: " + (isPlaybackActive ? "PLAYBACK" : "IDLE"));
                     }
                 }
                 return false;
@@ -299,11 +371,27 @@ public class BasicUI {
         frame.setVisible(true);
     }
 
+    // Method to create integer spinner without decimal points
+    private static JSpinner createIntegerSpinner(int value, int min, int max, int step) {
+        SpinnerNumberModel model = new SpinnerNumberModel(value, min, max, step);
+        JSpinner spinner = new JSpinner(model);
+        JFormattedTextField textField = ((JSpinner.NumberEditor) spinner.getEditor()).getTextField();
+        textField.setColumns(4); // Adjust the number of columns to fit your layout
+        textField.setEditable(true);
+        return spinner;
+    }
+
+    // Method to log messages internally
+    private static void logInternal(String message) {
+        logTextArea.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " - " + message + "\n");
+        logTextArea.setCaretPosition(logTextArea.getDocument().getLength()); // Scroll to the bottom
+    }
+
     private static String getCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // Date format
         return sdf.format(new Date());
     }
-
+    
     private static int getKeyCode(String functionKey) {
         switch (functionKey) {
             case "F1": return KeyEvent.VK_F1;
@@ -320,12 +408,5 @@ public class BasicUI {
             case "F12": return KeyEvent.VK_F12;
             default: return -1;
         }
-    }
-
-    private static JSpinner createIntegerSpinner(int value, int min, int max, int step) {
-        JSpinner spinner = new JSpinner(new SpinnerNumberModel(value, min, max, step));
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "#");
-        spinner.setEditor(editor);
-        return spinner;
     }
 }
