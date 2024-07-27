@@ -10,21 +10,18 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
+//import javax.swing.JFormattedTextField;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.ImageIcon;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
+//import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.Image;
 import java.io.File;
@@ -34,23 +31,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class BasicUI {
-    private static boolean isActive = false; // Flag to track status
-    private static Timer timer; // Timer for tracking duration
-    private static long startTime; // Start time for the timer
+    private static boolean isActive = false; // Flag to track recording status
+    private static boolean isPlaybackActive = false; // Flag to track playback status
     private static ImageIcon idleIcon;
     private static ImageIcon activeIcon;
-    private static ImageIcon playIcon;
-    private static JLabel timeLabel; // Time label for displaying duration
-    private static long totalElapsedTime; // Total elapsed time including pauses
+    private static ImageIcon playbackIcon;
 
     static {
         try {
             Image idleImg = ImageIO.read(new File("resources/idle_icon.png"));
             Image activeImg = ImageIO.read(new File("resources/active_icon.png"));
-            Image playImg = ImageIO.read(new File("resources/playback_icon.png"));
+            Image playbackImg = ImageIO.read(new File("resources/playback_icon.png"));
             idleIcon = new ImageIcon(idleImg);
             activeIcon = new ImageIcon(activeImg);
-            playIcon = new ImageIcon(playImg);
+            playbackIcon = new ImageIcon(playbackImg);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,16 +81,9 @@ public class BasicUI {
         JLabel nameLabel = new JLabel("Name");
         JLabel descriptionLabel = new JLabel("Description");
         JLabel loopsLabel = new JLabel("Loops:");
-        JSpinner loopsSpinner = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
-        int spinValue = 0;
-        // Get the editor from the spinner
-        JSpinner.NumberEditor editor = (JSpinner.NumberEditor) loopsSpinner.getEditor();
-        JFormattedTextField textField = editor.getTextField();
-        // Set preferred size of the text field
-        textField.setPreferredSize(new Dimension(60, 20)); // Width x Height
-        // Ensure the spinner itself respects this size
-        loopsSpinner.setPreferredSize(new Dimension(100, 20)); // Width x Height
-        
+        JSpinner loopsSpinner = createIntegerSpinner(0, 0, Integer.MAX_VALUE, 1);
+        int spinValue = 0; // Used to reset the spinner
+
         mainPanel.add(nameLabel);
         mainPanel.add(nameInput);
         mainPanel.add(descriptionLabel);
@@ -140,7 +127,7 @@ public class BasicUI {
         
         // Placeholder for total duration
         JLabel totalDurationLabel = new JLabel("Total duration: "); // Add total duration label
-        timeLabel = new JLabel("00:00:00");
+        JLabel timeLabel = new JLabel("00:00:00");
         JPanel durationPanel = new JPanel();
         durationPanel.add(totalDurationLabel);
         durationPanel.add(timeLabel);
@@ -188,27 +175,51 @@ public class BasicUI {
         
         JPanel speedMultiplierPanel = new JPanel();
         JLabel SpeedMultiplierLabel = new JLabel("Speed Multiplier%:");
-        JSpinner SpeedMultiplierSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 500, 1));
-        SpeedMultiplierSpinner.setPreferredSize(new Dimension(60, 20)); // Adjust size
+        JSpinner SpeedMultiplierSpinner = createIntegerSpinner(1, 1, 500, 1);
         speedMultiplierPanel.add(SpeedMultiplierLabel);
         speedMultiplierPanel.add(SpeedMultiplierSpinner);
         
         JPanel randomizePanel = new JPanel();
-        JLabel randomizeClickLabel = new JLabel("Randomize click locations %:");
-        JSpinner randomizeClickSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 20, 1));
+        JLabel randomizeClickLabel = new JLabel("Randomize click locations ±:");
+        JSpinner randomizeClickSpinner = createIntegerSpinner(1, 1, 20, 1);
         randomizePanel.add(randomizeClickLabel);
         randomizePanel.add(randomizeClickSpinner);
         
         JPanel extraDelayPanel = new JPanel();
         JLabel extraDelayLabel = new JLabel("Extra delay/Breaks after each playback in seconds:");
         extraDelayPanel.add(extraDelayLabel);
+        
         JPanel minDelayPanel = new JPanel();
-        JLabel minDelayLabel = new JLabel("min:");
+        JLabel minDelayLabel = new JLabel("Min:");
+        JSpinner minDelaySpinner = createIntegerSpinner(0, 0, 9999, 1);
         minDelayPanel.add(minDelayLabel);
+        minDelayPanel.add(minDelaySpinner);
+        
+        JPanel maxPanel = new JPanel();
+        JLabel maxLabel = new JLabel("Max:");
+        JSpinner maxSpinner = createIntegerSpinner(0, 0, 9999, 1);
+        maxPanel.add(maxLabel);
+        maxPanel.add(maxSpinner);
+        
+        JPanel targetPanel = new JPanel();
+        JLabel targetLabel = new JLabel("Target:");
+        JSpinner targetSpinner = createIntegerSpinner(0, 0, 9999, 1);
+        targetPanel.add(targetLabel);
+        targetPanel.add(targetSpinner);
+        
+        JPanel FocusPanel = new JPanel();
+        JLabel FocusLabel = new JLabel("Focus:");
+        JSpinner focusSpinner = createIntegerSpinner(0, 0, 9999, 1);
+        FocusPanel.add(FocusLabel);
+        FocusPanel.add(focusSpinner);
+
         advancedPanel.add(speedMultiplierPanel);
         advancedPanel.add(randomizePanel);
         advancedPanel.add(extraDelayPanel);
         advancedPanel.add(minDelayPanel);
+        advancedPanel.add(maxPanel);
+        advancedPanel.add(targetPanel);
+        advancedPanel.add(FocusPanel);
         // Add the advanced panel to the tabbed pane
         tabbedPane.addTab("Advanced", advancedPanel);
 
@@ -225,9 +236,20 @@ public class BasicUI {
         exitItem.addActionListener(e -> System.exit(0));
         saveItem.addActionListener(e -> System.out.println("Settings saved"));
         loadItem.addActionListener(e -> System.out.println("Settings loaded"));
-        clearItem.addActionListener(e -> nameInput.setText(""));
-        clearItem.addActionListener(e -> descriptionInput.setText(""));
-        clearItem.addActionListener(e -> loopsSpinner.setValue(spinValue));
+        clearItem.addActionListener(e -> {
+            nameInput.setText("");
+            descriptionInput.setText("");
+            loopsSpinner.setValue(spinValue);
+            minDelaySpinner.setValue(0);
+            maxSpinner.setValue(0);
+            targetSpinner.setValue(0);
+            focusSpinner.setValue(0);
+            SpeedMultiplierSpinner.setValue(1);
+            randomizeClickSpinner.setValue(1);
+            stateLabel.setText("IDLE");
+            stateLabel.setForeground(java.awt.Color.BLACK);
+            frame.setIconImage(idleIcon.getImage());
+        });
         fileMenu.add(saveItem);
         fileMenu.add(loadItem);
         fileMenu.add(clearItem);
@@ -240,37 +262,33 @@ public class BasicUI {
             @Override
             public boolean dispatchKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
-                    int selectedRecCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
-                    int selectedPlayCode = getKeyCode((String) functionPlayComboBox.getSelectedItem());
-                    
-                    
-                    
-                    if (e.getKeyCode() == selectedRecCode) {
+                    int selectedKeyCode = getKeyCode((String) functionRecComboBox.getSelectedItem());
+                    if (e.getKeyCode() == selectedKeyCode) {
                         // Toggle state
                         if (isActive) {
                             stateLabel.setText("IDLE");
                             stateLabel.setForeground(java.awt.Color.BLACK);
                             frame.setIconImage(idleIcon.getImage());
-                            stopTimer(); // Stop the timer
                         } else {
                             stateLabel.setText("RECORDING");
                             stateLabel.setForeground(java.awt.Color.RED);
                             frame.setIconImage(activeIcon.getImage());
-                            startTimer(); // Start the timer
                         }
                         isActive = !isActive; // Toggle the flag
-                    } else if (e.getKeyCode() == selectedPlayCode) {
+                    }
+                    selectedKeyCode = getKeyCode((String) functionPlayComboBox.getSelectedItem());
+                    if (e.getKeyCode() == selectedKeyCode) {
                         // Toggle state
-                        if (isActive) {
+                        if (isPlaybackActive) {
                             stateLabel.setText("IDLE");
                             stateLabel.setForeground(java.awt.Color.BLACK);
                             frame.setIconImage(idleIcon.getImage());
                         } else {
                             stateLabel.setText("PLAYBACK");
                             stateLabel.setForeground(java.awt.Color.GREEN);
-                            frame.setIconImage(playIcon.getImage());
+                            frame.setIconImage(playbackIcon.getImage());
                         }
-                        isActive = !isActive; // Toggle the flag
+                        isPlaybackActive = !isPlaybackActive; // Toggle the flag
                     }
                 }
                 return false;
@@ -280,40 +298,12 @@ public class BasicUI {
         // Display the window
         frame.setVisible(true);
     }
-    
-    private static String formatElapsedTime(long elapsedMillis) {
-        long totalSeconds = elapsedMillis / 1000;
-        long hours = totalSeconds / 3600;
-        long minutes = (totalSeconds % 3600) / 60;
-        long seconds = totalSeconds % 60;
 
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
-    }
-    
-    private static void startTimer() {
-    	startTime = System.currentTimeMillis();
-        timer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            	long elapsedTime = totalElapsedTime + (System.currentTimeMillis() - startTime);
-				timeLabel.setText(formatElapsedTime(elapsedTime));
-            }
-        });
-        timer.start();
-    }
-
-    private static void stopTimer() {
-        if (timer != null) {
-            timer.stop();
-            totalElapsedTime += System.currentTimeMillis() - startTime;
-        }
-    }
-    
     private static String getCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // Date format
         return sdf.format(new Date());
     }
-    
+
     private static int getKeyCode(String functionKey) {
         switch (functionKey) {
             case "F1": return KeyEvent.VK_F1;
@@ -330,5 +320,12 @@ public class BasicUI {
             case "F12": return KeyEvent.VK_F12;
             default: return -1;
         }
+    }
+
+    private static JSpinner createIntegerSpinner(int value, int min, int max, int step) {
+        JSpinner spinner = new JSpinner(new SpinnerNumberModel(value, min, max, step));
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "#");
+        spinner.setEditor(editor);
+        return spinner;
     }
 }
